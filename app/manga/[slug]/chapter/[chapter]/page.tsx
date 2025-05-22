@@ -4,8 +4,8 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export default async function ChapterPage({ params }: { params: Promise<{ slug: string; chapter: string }> }) {
-  const { slug, chapter } = await params;
+export default async function ChapterPage({ params }: { params: { slug: string; chapter: string } }) {
+  const { slug, chapter } = params;
   if (!slug || !chapter) return notFound();
 
   const manga = await prisma.manga.findFirst({
