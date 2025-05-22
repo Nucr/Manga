@@ -5,7 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FaArrowLeft, FaBook, FaUsers, FaChartLine, FaCog } from 'react-icons/fa';
 
-export default function EditUser({ params }: { params: { id: string } }) {
+type EditUserPageProps = {
+  params: {
+    id: string;
+  };
+};
+
+export default function Page({ params }: EditUserPageProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
