@@ -6,10 +6,10 @@ import { Status, MangaGenre } from '@prisma/client';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const manga = await prisma.manga.findUnique({
       where: { id },
       include: {
@@ -44,10 +44,10 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const formData = await request.formData();
     const title = formData.get('title') as string;
     const slug = formData.get('slug') as string;

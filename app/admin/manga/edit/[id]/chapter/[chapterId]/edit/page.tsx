@@ -2,8 +2,8 @@
 import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function ChapterEditPage({ params }: { params: Promise<{ id: string; chapterId: string }> }) {
-  const { id, chapterId } = use(params);
+export default function ChapterEditPage({ params }: { params: { id: string; chapterId: string } }) {
+  const { id, chapterId } = params;
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 

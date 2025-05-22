@@ -2,8 +2,8 @@
 import { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function NewChapterPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function NewChapterPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const router = useRouter();
   const [number, setNumber] = useState('');
   const [title, setTitle] = useState('');

@@ -43,8 +43,8 @@ interface BulkChapter {
   zipFile?: File;
 }
 
-export default function EditMangaPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function EditMangaPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [manga, setManga] = useState<Manga | null>(null);
