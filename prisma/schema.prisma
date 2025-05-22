@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Manga {
+  id          String      @id @default(cuid())
+  title       String
+  slug        String      @unique
+  description String
+  author      String
+  artist      String
+  status      Status
+  type        MangaType
+  coverImage  String?
+  genres      MangaGenre[]
+  chapters    Chapter[]
+  categories  MangaCategory[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  summary     String?
+  views       Int         @default(0)
+
+  @@map("manga")
+}
+
+model Chapter {
+  id        String   @id @default(cuid())
+  number    Float
+  title     String
+  content   String
+  manga     Manga    @relation(fields: [mangaId], references: [id], onDelete: Cascade)
+  mangaId   String
+  pages     Page[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Page {
+  id        String   @id @default(cuid())
+  number    Int
+  imageUrl  String
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  chapterId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("page")
+}
+
+model Category {
+  id     String   @id @default(cuid())
+  name   String   @unique
+  mangas MangaCategory[]
+}
+
+model MangaCategory {
+  id         String   @id @default(cuid())
+  manga      Manga    @relation(fields: [mangaId], references: [id])
+  mangaId    String
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+  createdAt  DateTime @default(now())
+
+  @@unique([mangaId, categoryId])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  username      String    @unique
+  password      String
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  profileImage  String?
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Status {
+  ONGOING
+  COMPLETED
+  HIATUS
+  CANCELLED
+}
+
+enum MangaType {
+  MANGA
+  MANHWA
+  MANHUA
+  NOVEL
+}
+
+enum MangaGenre {
+  ACTION
+  ADVENTURE
+  COMEDY
+  DRAMA
+  FANTASY
+  HORROR
+  MYSTERY
+  ROMANCE
+  SCIFI
+  SLICE_OF_LIFE
+  SUPERNATURAL
+  THRILLER
+  SPORTS
+  ECCHI
+  HAREM
+  ISEKAI
+  MECHA
+  PSYCHOLOGICAL
+  SHOUNEN
+  SHOUJO
+  SEINEN
+  JOSEI
+  YAOI
+  YURI
+  GENDER_BENDER
+  HISTORICAL
+  MAGICAL
+  MARTIAL_ARTS
+  MUSIC
+  SCHOOL
+  VAMPIRE
+  ZOMBIE
+  FINAL
+}
