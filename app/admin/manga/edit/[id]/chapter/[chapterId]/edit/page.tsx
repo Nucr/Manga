@@ -4,11 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 type Props = {
-  params: any;
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: {
+    id: string;
+    chapterId: string;
+  };
+  searchParams?: { [key: string]: string | string[] | undefined };
 };
 
-export default function ChapterEditPage({ params }: Props) {
+export default function ChapterEditPage({ params, searchParams }: Props) {
   const router = useRouter();
   const { id, chapterId } = params;
   const [loading, setLoading] = useState(false);
