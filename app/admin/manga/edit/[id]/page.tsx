@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { FaEdit, FaTrash, FaPlus, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import Link from 'next/link';
-import { Status, MangaType, MangaGenre } from '@prisma/client';
 import JSZip from 'jszip';
 
 interface Page {
@@ -598,8 +597,8 @@ export default function EditMangaPage({ params }: { params: { id: string } }) {
               onClick={toggleSortOrder}
               className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 transition flex items-center gap-2"
             >
-              <FaSort />
-              {sortOrder === 'asc' ? <FaSortUp /> : <FaSortDown />}
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 4h18M7 20h10M12 14h.01" /></svg>
+              {sortOrder === 'asc' ? 'A-Z' : 'Z-A'}
             </button>
             <button
               onClick={() => setBulkUploadMode(!bulkUploadMode)}
@@ -715,7 +714,7 @@ export default function EditMangaPage({ params }: { params: { id: string } }) {
                     onClick={() => removeBulkChapter(index)}
                     className="text-red-400 hover:text-red-200 p-2"
                   >
-                    <FaTrash />
+                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                   </button>
                 </div>
               </div>
@@ -808,7 +807,7 @@ export default function EditMangaPage({ params }: { params: { id: string } }) {
                       }}
                       className="text-red-400 hover:text-red-200 p-1 rounded transition"
                     >
-                      <FaTrash />
+                      <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   </div>
                 </div>

@@ -3,11 +3,16 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Status, MangaType, MangaGenre } from "@prisma/client";
 import { FaArrowLeft, FaBook, FaChartLine, FaCog } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
+import { X } from 'lucide-react';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
+// Enum tipleri
+type Status = 'ONGOING' | 'COMPLETED' | 'HIATUS' | 'CANCELLED';
+type MangaType = 'MANGA' | 'MANHWA' | 'MANHUA' | 'COMIC';
+type MangaGenre = 'ACTION' | 'ADVENTURE' | 'COMEDY' | 'DRAMA' | 'FANTASY' | 'HORROR' | 'MYSTERY' | 'ROMANCE' | 'SCIFI' | 'SLICE_OF_LIFE' | 'SUPERNATURAL' | 'THRILLER' | 'SPORTS' | 'ECCHI' | 'HAREM' | 'ISEKAI' | 'MECHA' | 'PSYCHOLOGICAL' | 'SHOUNEN' | 'SHOUJO' | 'SEINEN' | 'JOSEI' | 'YAOI' | 'YURI' | 'HISTORICAL' | 'MAGICAL' | 'MARTIAL_ARTS' | 'MUSIC' | 'SCHOOL' | 'VAMPIRE' | 'ZOMBIE' | 'FINAL';
 
 // Chapter tipi tanımla
 interface Chapter {
@@ -17,7 +22,22 @@ interface Chapter {
   pages: { imageUrl: string }[];
 }
 
-const genreTrMap: Record<string, string> = {
+interface FormData {
+  title: string;
+  slug: string;
+  description: string;
+  author: string;
+  artist: string;
+  status: Status;
+  type: MangaType;
+  genres: MangaGenre[];
+  coverImage: string | null;
+  bannerImage: string | null;
+  summary: string;
+  chapters: Chapter[];
+}
+
+const genreTrMap: Record<MangaGenre, string> = {
   ACTION: "Aksiyon",
   ADVENTURE: "Macera",
   COMEDY: "Komedi",
@@ -56,17 +76,20 @@ export default function NewManga() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    title: "",
-    slug: "",
-    description: "",
-    author: "",
-    artist: "",
-    status: "ONGOING" as Status,
-    type: "MANGA" as MangaType,
-    genres: [] as MangaGenre[],
-    coverImage: "",
-    summary: "",
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [formData, setFormData] = useState<FormData>({
+    title: '',
+    slug: '',
+    description: '',
+    author: '',
+    artist: '',
+    status: 'ONGOING',
+    type: 'MANGA',
+    genres: [],
+    coverImage: null,
+    bannerImage: null,
+    summary: '',
+    chapters: []
   });
   const [chapters, setChapters] = useState<Chapter[]>([]);
 
@@ -147,17 +170,25 @@ export default function NewManga() {
     }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'cover' | 'banner') => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     if (file.size > MAX_FILE_SIZE) {
-      toast.error("Dosya boyutu 50MB'dan büyük olamaz!");
+      toast.error('Dosya boyutu 50MB\'dan küçük olmalıdır');
       return;
     }
+
     const reader = new FileReader();
     reader.onloadend = () => {
-      setCoverPreview(reader.result as string);
-      setFormData(prev => ({ ...prev, coverImage: reader.result as string }));
+      const result = reader.result as string;
+      if (type === 'cover') {
+        setCoverPreview(result);
+        setFormData(prev => ({ ...prev, coverImage: result }));
+      } else {
+        setBannerPreview(result);
+        setFormData(prev => ({ ...prev, bannerImage: result }));
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -295,20 +326,18 @@ export default function NewManga() {
                 Türler
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Object.values(MangaGenre)
-                  .filter(genre => genre !== "GENDER_BENDER")
-                  .map((genre) => (
-                    <label key={genre} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        name="genres"
-                        checked={formData.genres.includes(genre)}
-                        onChange={() => handleGenreChange(genre)}
-                        className="rounded bg-gray-700/50 border-gray-600"
-                      />
-                      <span className="text-sm">{genreTrMap[genre] || genre}</span>
-                    </label>
-                  ))}
+                {Object.entries(genreTrMap).map(([genre, label]) => (
+                  <div key={genre} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={genre}
+                      checked={formData.genres.includes(genre as MangaGenre)}
+                      onChange={() => handleGenreChange(genre as MangaGenre)}
+                      className="mr-2"
+                    />
+                    <label htmlFor={genre}>{label}</label>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -366,19 +395,17 @@ export default function NewManga() {
                     />
                     <div className="flex flex-wrap gap-2">
                       {ch.pages.map((page, pageIdx) => (
-                        <div key={pageIdx} className="relative group">
+                        <div key={pageIdx} className="relative">
                           <img
                             src={page.imageUrl}
-                            alt={`Bölüm ${ch.number} Sayfa ${pageIdx + 1}`}
-                            className="h-24 w-16 object-cover rounded border border-gray-600"
+                            alt={`Sayfa ${pageIdx + 1}`}
+                            className="w-full h-auto"
                           />
                           <button
-                            type="button"
                             onClick={() => handleRemovePage(idx, pageIdx)}
-                            className="absolute top-0 right-0 bg-red-700 text-xs text-white rounded px-1 py-0.5 opacity-80 group-hover:opacity-100"
-                            title="Sayfayı Sil"
+                            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded"
                           >
-                            ×
+                            <X size={16} />
                           </button>
                         </div>
                       ))}
@@ -396,13 +423,13 @@ export default function NewManga() {
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleFileChange}
+                onChange={(e) => handleFileChange(e, 'cover')}
                 className="mb-2"
               />
               <input
                 type="url"
                 name="coverImage"
-                value={formData.coverImage}
+                value={formData.coverImage || ''}
                 onChange={e => setFormData({ ...formData, coverImage: e.target.value })}
                 className="w-full px-4 py-2 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
                 placeholder="Kapak Resmi URL"
@@ -413,6 +440,34 @@ export default function NewManga() {
                   alt="Kapak Önizleme"
                   className="h-32 w-24 object-cover rounded border border-gray-600"
                   onError={e => (e.currentTarget.src = '/default-cover.png')}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Banner Resmi
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, 'banner')}
+                className="mb-2"
+              />
+              <input
+                type="url"
+                name="bannerImage"
+                value={formData.bannerImage || ''}
+                onChange={e => setFormData({ ...formData, bannerImage: e.target.value })}
+                className="w-full px-4 py-2 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+                placeholder="Banner Resmi URL"
+              />
+              <div className="mt-2">
+                <img
+                  src={bannerPreview || formData.bannerImage || '/default-banner.png'}
+                  alt="Banner Önizleme"
+                  className="h-32 w-24 object-cover rounded border border-gray-600"
+                  onError={e => (e.currentTarget.src = '/default-banner.png')}
                 />
               </div>
             </div>

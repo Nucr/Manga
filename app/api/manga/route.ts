@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { Status, MangaType, MangaGenre } from '@prisma/client';
 
 export async function GET(request: Request) {
   try {
@@ -52,7 +51,7 @@ export async function GET(request: Request) {
         },
       },
     });
-    const safeMangas = mangas.map(m => ({
+    const safeMangas = mangas.map((m: any) => ({
       ...m,
       genres: Array.isArray(m.genres) ? m.genres : [],
       chapters: Array.isArray(m.chapters) ? m.chapters : []
@@ -103,8 +102,8 @@ export async function POST(request: Request) {
         description: description || summary || "",
         author,
         artist,
-        status: status as Status,
-        type: type as MangaType,
+        status: status,
+        type: type,
         coverImage: coverImage || null,
         genres: genres || [],
         summary: summary || null,
@@ -169,11 +168,6 @@ export async function DELETE(request: Request) {
       { status: 500 }
     );
   }
-}
-
-export async function GETCategories() {
-  const categories = await prisma.category.findMany({ orderBy: { name: 'asc' } });
-  return NextResponse.json(categories);
 }
 
 export async function PUT(request: Request) {
