@@ -4,10 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 type Props = {
-  params: {
-    id: string;
-    chapterId: string;
-  };
+  params: any;
   searchParams: { [key: string]: string | string[] | undefined };
 };
 
