@@ -6,7 +6,8 @@ const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   try {
-    const { username, email, password } = await request.json();
+    const body = await request.json();
+    const { username, email, password } = body;
     if (!username || !email || !password) {
       return NextResponse.json({ error: 'Eksik bilgi!' }, { status: 400 });
     }
@@ -21,15 +22,15 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Kullanıcıyı kaydet
-    await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
-        name: username,
+        username,
         email,
         password: hashedPassword,
       },
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json(newUser);
   } catch (error) {
     return NextResponse.json({ error: 'Sunucu hatası.' }, { status: 500 });
   }
