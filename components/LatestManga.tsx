@@ -7,7 +7,7 @@ interface Manga {
   id: string;
   title: string;
   slug: string;
-  cover: string;
+  coverImage: string | null;
   status: string;
   createdAt: string;
 }
