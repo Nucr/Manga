@@ -1,10 +1,19 @@
 'use client';
-import { use, useState } from 'react';
+
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function ChapterEditPage({ params }: { params: { id: string; chapterId: string } }) {
-  const { id, chapterId } = params;
+type Props = {
+  params: {
+    id: string;
+    chapterId: string;
+  };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+export default function ChapterEditPage({ params }: Props) {
   const router = useRouter();
+  const { id, chapterId } = params;
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
