@@ -5,6 +5,9 @@ import LatestManga from '@/components/LatestManga';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import { MangaGenre } from "@prisma/client";
+import LayoutWithNavbar from '@/components/LayoutWithNavbar';
+import { FaSearch, FaSpinner } from 'react-icons/fa';
+import Image from 'next/image';
 
 const categories = [
   'Aksiyon', 'Bilim Kurgu', 'Canavar', 'Dahi Mc', 'Doğa Üstü', 'Dövüş Sanatları', 'Dram',
@@ -167,7 +170,9 @@ function useDailyRandomManga(allManga: any[], count: number, key: string) {
   return selected;
 }
 
-export default function Home() {
+export default function Home({
+  searchParams,
+}: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const [activeTab, setActiveTab] = useState(0);
   const [lastChapters, setLastChapters] = useState<any[]>([]);
   const [allManga, setAllManga] = useState<any[]>([]);
@@ -175,6 +180,13 @@ export default function Home() {
   const { markAsRead, isRead } = useReadChapters();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const router = useRouter();
+  const [mangaList, setMangaList] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.page as string) || 1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchQuery, setSearchQuery] = useState(searchParams.search as string || '');
+  const [initialLoad, setInitialLoad] = useState(true);
 
   // allManga'nın gerçekten bir dizi olduğundan emin ol
   const safeAllManga = Array.isArray(allManga) ? allManga : [];
@@ -195,6 +207,37 @@ export default function Home() {
       .then(data => setPopularSeries(data));
   }, []);
 
+  useEffect(() => {
+    const fetchManga = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/api/manga?page=${currentPage}&search=${searchQuery}`);
+        if (!response.ok) {
+          throw new Error('Manga listesi alınamadı');
+        }
+        const data = await response.json();
+        setMangaList(data.manga);
+        setTotalPages(data.totalPages);
+      } catch (err: any) {
+        setError(err.message);
+        setMangaList([]);
+      } finally {
+        setLoading(false);
+        setInitialLoad(false);
+      }
+    };
+    fetchManga();
+  }, [currentPage, searchQuery]);
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setCurrentPage(1); // Arama yapınca her zaman ilk sayfaya dön
+    const form = e.currentTarget;
+    const input = form.elements.namedItem('search') as HTMLInputElement;
+    setSearchQuery(input.value);
+  };
+
   const filteredManga = selectedCategory
     ? safeAllManga.filter(manga =>
         manga.genres?.some((g: string) =>
@@ -206,204 +249,197 @@ export default function Home() {
   const safePopularSeries = Array.isArray(popularSeries) ? popularSeries : [];
 
   return (
-    <div className="min-h-screen bg-[#181a20] text-white">
-      <Navbar allManga={allManga} />
-      {/* Banner/Slider */}
-      <div className="relative w-full h-[260px] bg-black flex items-end" style={{backgroundImage:`url('${featured.image}')`, backgroundSize:'cover', backgroundPosition:'center'}}>
-        <div className="absolute inset-0 bg-gradient-to-t from-[#181a20] via-[#181a20cc] to-transparent" />
-        <div className="relative z-10 px-10 pb-6">
-          <h2 className="text-3xl font-bold mb-2">{featured.title}</h2>
-          <div className="flex flex-wrap gap-2 items-center mb-2">
-            <span className="bg-gray-800 px-2 py-0.5 rounded text-sm font-bold">{featured.rating}</span>
-            <span className="text-sm">Tür: {featured.type}</span>
-            {featured.genres.map(g => <span key={g} className="text-xs bg-kuzey-blue/80 px-2 py-0.5 rounded-full">{g}</span>)}
+    <LayoutWithNavbar>
+      <div className="min-h-screen bg-[#181a20] text-white">
+        <Navbar allManga={allManga} />
+        {/* Banner/Slider */}
+        <div className="w-full h-[200px] sm:h-[260px] relative overflow-hidden bg-gradient-to-r from-red-500 to-orange-500">
+          <Image
+            src="/banner-anime.jpg"
+            alt="Banner"
+            layout="fill"
+            objectFit="cover"
+            quality={80}
+            priority
+            className="opacity-50"
+          />
+          <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4 sm:px-10">
+            {/* Banner başlığı ve açıklaması buradaydı, kaldırıldı veya öne çıkan manga bilgileri ile değiştirildi */}
           </div>
-          <p className="max-w-2xl text-sm text-gray-200">{featured.desc}</p>
         </div>
-      </div>
 
-      {/* Kategoriler */}
-      {/* Kategoriler barı kaldırıldı */}
+        {/* Kategoriler */}
+        {/* Kategoriler barı kaldırıldı */}
 
-      {/* Bugünün Seçmeleri */}
-      <div className="max-w-6xl mx-auto mt-8">
-        <h3 className="text-xl font-bold mb-3 bg-kuzey-dark px-4 py-2 rounded-t">Önerilen Seriler</h3>
-        <div className="flex gap-4 overflow-x-auto pb-4 bg-[#23263a] px-4 rounded-b">
-          {todaysPicks.length === 0 ? (
-            <div className="text-gray-400 py-8">Önerilen seriler bulunamadı.</div>
-          ) : (
-            todaysPicks.map((manga, i) => (
+        {/* Bugünün Seçmeleri */}
+        <div className="max-w-6xl mx-auto mt-8">
+          <h3 className="text-xl font-bold mb-3 bg-kuzey-dark px-4 py-2 rounded-t">Önerilen Seriler</h3>
+          <div className="flex gap-4 overflow-x-auto pb-4 bg-[#23263a] px-4 rounded-b">
+            {todaysPicks.length === 0 ? (
+              <div className="text-gray-400 py-8">Önerilen seriler bulunamadı.</div>
+            ) : (
+              todaysPicks.map((manga, i) => (
+                <Link href={`/manga/${manga.slug}`} key={manga.id} className="min-w-[160px] bg-kuzey-light/90 rounded-lg p-2 flex flex-col items-center shadow-md">
+                  <div className="relative">
+                    <img src={manga.coverImage || '/default-cover.png'} alt={manga.title} className="w-28 h-40 object-cover rounded mb-2 border-2 border-kuzey-dark" />
+                  </div>
+                  <span className="font-bold text-kuzey-blue text-center text-base leading-tight drop-shadow">{manga.title}</span>
+                  <span className="text-sm text-white font-semibold mt-1">Bölüm {manga.chapters?.length ? manga.chapters[0]?.number : '-'}</span>
+                  <span className="text-sm text-yellow-400 font-bold mt-1">★ {manga.rating || '-'}</span>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Öneri */}
+        {/* Bu bölümü kaldırıyorum */}
+        {/* <div className="max-w-6xl mx-auto mt-8">
+          <h3 className="text-xl font-bold mb-3 bg-kuzey-dark px-4 py-2 rounded-t">Öneri</h3>
+          <div className="flex gap-2 mb-4 bg-[#23263a] px-4 py-2 rounded-b">
+            {suggestionTabs.map((tab, i) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(i)}
+                className={`px-4 py-1 rounded font-semibold transition ${activeTab === i ? 'bg-kuzey-blue text-white' : 'bg-[#353a50] text-gray-300 hover:bg-kuzey-dark'}`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-4 overflow-x-auto pb-4 bg-[#23263a] px-4 rounded-b">
+            {suggestionManga.map((manga, i) => (
               <Link href={`/manga/${manga.slug}`} key={manga.id} className="min-w-[160px] bg-kuzey-light/90 rounded-lg p-2 flex flex-col items-center shadow-md">
                 <div className="relative">
                   <img src={manga.coverImage || '/default-cover.png'} alt={manga.title} className="w-28 h-40 object-cover rounded mb-2 border-2 border-kuzey-dark" />
                 </div>
-                <span className="font-bold text-kuzey-blue text-center text-base leading-tight drop-shadow">{manga.title}</span>
-                <span className="text-sm text-white font-semibold mt-1">Bölüm {manga.chapters?.length ? manga.chapters[0]?.number : '-'}</span>
-                <span className="text-sm text-yellow-400 font-bold mt-1">★ {manga.rating || '-'}</span>
+                <span className="font-bold text-kuzey-dark text-center text-sm leading-tight">{manga.title}</span>
+                <span className="text-xs text-gray-700">Bölüm {manga.chapters?.length ? manga.chapters[manga.chapters.length-1]?.number : '-'}</span>
+                <span className="text-xs text-yellow-600">★ {manga.rating || '-'}</span>
               </Link>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Öneri */}
-      {/* Bu bölümü kaldırıyorum */}
-      {/* <div className="max-w-6xl mx-auto mt-8">
-        <h3 className="text-xl font-bold mb-3 bg-kuzey-dark px-4 py-2 rounded-t">Öneri</h3>
-        <div className="flex gap-2 mb-4 bg-[#23263a] px-4 py-2 rounded-b">
-          {suggestionTabs.map((tab, i) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(i)}
-              className={`px-4 py-1 rounded font-semibold transition ${activeTab === i ? 'bg-kuzey-blue text-white' : 'bg-[#353a50] text-gray-300 hover:bg-kuzey-dark'}`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-4 overflow-x-auto pb-4 bg-[#23263a] px-4 rounded-b">
-          {suggestionManga.map((manga, i) => (
-            <Link href={`/manga/${manga.slug}`} key={manga.id} className="min-w-[160px] bg-kuzey-light/90 rounded-lg p-2 flex flex-col items-center shadow-md">
-              <div className="relative">
-                <img src={manga.coverImage || '/default-cover.png'} alt={manga.title} className="w-28 h-40 object-cover rounded mb-2 border-2 border-kuzey-dark" />
-              </div>
-              <span className="font-bold text-kuzey-dark text-center text-sm leading-tight">{manga.title}</span>
-              <span className="text-xs text-gray-700">Bölüm {manga.chapters?.length ? manga.chapters[manga.chapters.length-1]?.number : '-'}</span>
-              <span className="text-xs text-yellow-600">★ {manga.rating || '-'}</span>
-            </Link>
-          ))}
-        </div>
-      </div> */}
-
-      {/* Son Yayımlananlar ve Sağ Sidebar */}
-      <div className="max-w-6xl mx-auto mt-8 flex flex-col lg:flex-row gap-8">
-        {/* Son Yayımlananlar */}
-        <div className="flex-1">
-          <h3 className="text-xl font-bold mb-3 bg-kuzey-dark px-4 py-2 rounded-t">Son Yayımlananlar</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredManga.map((manga) => (
-              <div key={manga.id} className="bg-[#23243a] rounded-lg p-4 flex flex-row items-center shadow-md gap-4">
-                {/* Sol: Kapak ve bayrak */}
-                <div className="relative group flex flex-col items-center mr-4">
-                  <Link href={`/manga/${manga.slug}`}>
-                    <img src={manga.coverImage || '/default-cover.png'} className="w-20 h-28 rounded object-cover group-hover:scale-105 transition" alt={manga.title} />
-                    {manga.flag && (
-                      <span className="absolute top-1 right-1 text-2xl drop-shadow">{manga.flag}</span>
-                    )}
-                  </Link>
-                </div>
-                {/* Sağ: Başlık, bölümler, durum */}
-                <div className="flex-1 flex flex-col gap-1">
-                  <Link href={`/manga/${manga.slug}`} className="font-bold text-white text-lg mb-1 hover:text-kuzey-blue transition">
-                    {manga.title}
-                  </Link>
-                  <div className="flex flex-col gap-1 mb-2">
-                    {manga.chapters?.slice(0,3).map((ch: any) => (
-                      <div key={ch.id} className="flex items-center justify-between text-sm">
-                        <Link href={`/manga/${manga.slug}/chapter/${ch.number}`} className="text-kuzey-blue font-semibold hover:underline">Bölüm {ch.number}</Link>
-                        <span className="text-gray-400">{timeAgo(ch.createdAt)}</span>
-                      </div>
-                    ))}
-                    {(!manga.chapters || manga.chapters.length === 0) && (
-                      <div className="text-xs text-gray-400">Henüz bölüm yok.</div>
-                    )}
-                  </div>
-                  <div className="mt-auto">
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${manga.status === 'ONGOING' ? 'bg-orange-600 text-white' : manga.status === 'COMPLETED' ? 'bg-green-600 text-white' : 'bg-gray-600 text-white'}`}>{statusTrMap[manga.status]}</span>
-                  </div>
-                </div>
-              </div>
             ))}
-            {filteredManga.length === 0 && <div className="text-gray-400">Bu kategoride manga yok.</div>}
           </div>
-          {/* Pagination */}
-          <div className="flex justify-center mt-6">
-            <button className="bg-kuzey-blue hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow transition text-lg">Sonrakİ &gt;</button>
-          </div>
-        </div>
-        {/* Sağ Sidebar */}
-        <div className="w-full lg:w-[320px] flex flex-col gap-6">
-          {/* Detaylı Arama */}
-          <div className="bg-[#181a20] rounded-2xl p-5 shadow-xl border border-[#23263a]">
-            <h4 className="font-bold mb-4 text-lg text-blue-300">Detaylı Arama</h4>
-            <form
-              className="flex flex-col gap-3 mb-2"
-              onSubmit={e => {
-                e.preventDefault();
-                const form = e.target as HTMLFormElement;
-                const genre = form.genre.value;
-                const status = form.status.value;
-                const type = form.type.value;
-                const search = form.search.value;
-                const params = new URLSearchParams();
-                if (genre) params.append('genre', genre);
-                if (status) params.append('status', status);
-                if (type) params.append('type', type);
-                if (search) params.append('search', search);
-                router.push(`/manga?${params.toString()}`);
-              }}
-            >
-              <select name="genre" className="rounded-lg px-3 py-2 bg-[#23263a] text-white border border-blue-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                <option value="">Tüm Tür</option>
-                {genres.map(g => (
-                  <option key={g} value={g}>{genreTrMap[g]}</option>
-                ))}
-              </select>
-              <select name="status" className="rounded-lg px-3 py-2 bg-[#23263a] text-white border border-blue-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                <option value="">Durum Hepsi</option>
-                {statuses.map(s => (
-                  <option key={s} value={s}>{statusTrMap[s]}</option>
-                ))}
-              </select>
-              <select name="type" className="rounded-lg px-3 py-2 bg-[#23263a] text-white border border-blue-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                <option value="">Tür Hepsi</option>
-                {types.map(t => (
-                  <option key={t} value={t}>{typeTrMap[t]}</option>
-                ))}
-              </select>
-              <input name="search" type="text" placeholder="Arama..." className="rounded-lg px-3 py-2 bg-[#23263a] text-white border border-blue-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition placeholder:text-blue-200" />
-              <button type="submit" className="w-full bg-gradient-to-r from-blue-700 to-blue-500 text-white font-bold py-2 rounded-lg shadow hover:from-blue-600 hover:to-blue-400 transition text-lg tracking-wide mt-2">Arama</button>
-            </form>
-          </div>
-          {/* Popüler Seriler */}
-          <div className="bg-[#23263a] rounded-lg p-4">
-            <h4 className="font-bold mb-2">Popüler Seriler</h4>
-            <ul className="flex flex-col gap-2">
-              {safePopularSeries.map((serie: any, i: number) => (
-                <Link href={`/manga/${serie.slug}`} key={serie.id} className="flex gap-2 items-center">
-                  <span className="text-lg font-bold w-5 text-right">{i+1}</span>
-                  <img src={serie.coverImage || '/default-cover.png'} alt={serie.title} className="w-10 h-14 object-cover rounded" />
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-xs text-kuzey-ice truncate max-w-[120px]">{serie.title}</span>
-                    <span className="text-[10px] text-gray-400 truncate max-w-[120px]">{serie.genres?.join(', ')}</span>
-                    <span className="text-xs text-yellow-600">👁️ {serie.views || 0}</span>
+        </div> */}
+
+        {/* Son Yayımlananlar ve Sağ Sidebar */}
+        <div className="max-w-6xl mx-auto mt-4 sm:mt-8 px-4 sm:px-0 flex flex-col lg:flex-row gap-4 sm:gap-8">
+          {/* Son Yayımlananlar */}
+          <div className="flex-1">
+            <h3 className="text-lg sm:text-xl font-bold mb-3 bg-kuzey-dark px-4 py-2 rounded-t">Son Yayımlananlar</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              {filteredManga.map((manga) => (
+                <div key={manga.id} className="bg-[#23243a] rounded-lg p-3 sm:p-4 flex flex-row items-center shadow-md gap-3 sm:gap-4">
+                  {/* Sol: Kapak ve bayrak */}
+                  <div className="relative group flex flex-col items-center mr-2 sm:mr-4">
+                    <Link href={`/manga/${manga.slug}`}>
+                      <img src={manga.coverImage || '/default-cover.png'} className="w-16 h-24 sm:w-20 sm:h-28 rounded object-cover group-hover:scale-105 transition" alt={manga.title} />
+                      {manga.flag && (
+                        <span className="absolute top-1 right-1 text-xl sm:text-2xl drop-shadow">{manga.flag}</span>
+                      )}
+                    </Link>
                   </div>
-                </Link>
+                  {/* Sağ: Başlık, bölümler, durum */}
+                  <div className="flex-1 flex flex-col gap-1">
+                    <Link href={`/manga/${manga.slug}`} className="font-bold text-white text-base sm:text-lg mb-1 hover:text-kuzey-blue transition line-clamp-1">
+                      {manga.title}
+                    </Link>
+                    <div className="flex flex-col gap-1 mb-2">
+                      {manga.chapters?.slice(0,3).map((ch: any) => (
+                        <div key={ch.id} className="flex items-center justify-between text-xs sm:text-sm">
+                          <Link href={`/manga/${manga.slug}/chapter/${ch.number}`} className="text-kuzey-blue font-semibold hover:underline">Bölüm {ch.number}</Link>
+                          <span className="text-gray-400">{timeAgo(ch.createdAt)}</span>
+                        </div>
+                      ))}
+                      {(!manga.chapters || manga.chapters.length === 0) && (
+                        <div className="text-xs text-gray-400">Henüz bölüm yok.</div>
+                      )}
+                    </div>
+                    <div className="mt-auto">
+                      <span className={`inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-bold ${manga.status === 'ONGOING' ? 'bg-orange-600 text-white' : manga.status === 'COMPLETED' ? 'bg-green-600 text-white' : 'bg-gray-600 text-white'}`}>{statusTrMap[manga.status]}</span>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </ul>
+              {filteredManga.length === 0 && <div className="text-gray-400">Bu kategoride manga yok.</div>}
+            </div>
+            {/* Pagination */}
+            <div className="flex justify-center mt-4 sm:mt-6">
+              <button className="bg-kuzey-blue hover:bg-blue-700 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow transition text-base sm:text-lg">Sonrakİ &gt;</button>
+            </div>
+          </div>
+          {/* Sağ Sidebar */}
+          <div className="w-full lg:w-[320px] flex flex-col gap-4 sm:gap-6">
+            {/* Detaylı Arama */}
+            <div className="bg-[#181a20] rounded-2xl p-4 sm:p-5 shadow-xl border border-[#23263a]">
+              <h4 className="font-bold mb-3 sm:mb-4 text-base sm:text-lg text-blue-300">Detaylı Arama</h4>
+              <form
+                className="flex flex-col gap-2 sm:gap-3 mb-2"
+                onSubmit={handleSearch}
+              >
+                <select name="genre" className="rounded-lg px-3 py-2 bg-[#23263a] text-white border border-blue-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm">
+                  <option value="">Tüm Tür</option>
+                  {genres.map(g => (
+                    <option key={g} value={g}>{genreTrMap[g]}</option>
+                  ))}
+                </select>
+                <select name="status" className="rounded-lg px-3 py-2 bg-[#23263a] text-white border border-blue-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm">
+                  <option value="">Durum Hepsi</option>
+                  {statuses.map(s => (
+                    <option key={s} value={s}>{statusTrMap[s]}</option>
+                  ))}
+                </select>
+                <select name="type" className="rounded-lg px-3 py-2 bg-[#23263a] text-white border border-blue-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm">
+                  <option value="">Tür Hepsi</option>
+                  {types.map(t => (
+                    <option key={t} value={t}>{typeTrMap[t]}</option>
+                  ))}
+                </select>
+                <input name="search" type="text" placeholder="Arama..." className="rounded-lg px-3 py-2 bg-[#23263a] text-white border border-blue-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition placeholder:text-blue-200 text-sm" />
+                <button type="submit" className="w-full bg-gradient-to-r from-blue-700 to-blue-500 text-white font-bold py-2 rounded-lg shadow hover:from-blue-600 hover:to-blue-400 transition text-base sm:text-lg tracking-wide mt-2">Arama</button>
+              </form>
+            </div>
+            {/* Popüler Seriler */}
+            <div className="bg-[#23263a] rounded-lg p-3 sm:p-4">
+              <h4 className="font-bold mb-2 text-base sm:text-lg">Popüler Seriler</h4>
+              <ul className="flex flex-col gap-2">
+                {safePopularSeries.map((serie: any, i: number) => (
+                  <Link href={`/manga/${serie.slug}`} key={serie.id} className="flex gap-2 items-center">
+                    <span className="text-base sm:text-lg font-bold w-5 text-right">{i+1}</span>
+                    <img src={serie.coverImage || '/default-cover.png'} alt={serie.title} className="w-8 h-12 sm:w-10 sm:h-14 object-cover rounded" />
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-xs text-kuzey-ice truncate max-w-[120px] sm:max-w-[180px]">{serie.title}</span>
+                      <span className="text-[10px] sm:text-xs text-gray-400 truncate max-w-[120px] sm:max-w-[180px]">{serie.genres?.join(', ')}</span>
+                      <span className="text-xs text-yellow-600">👁️ {serie.views || 0}</span>
+                    </div>
+                  </Link>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Footer ve A-Z Listesi */}
-      <footer className="mt-12 bg-kuzey-blue py-6">
-        <div className="max-w-6xl mx-auto flex flex-col items-center gap-4">
-          <div className="flex gap-4 flex-wrap justify-center">
-            <a href="#" className="text-white font-semibold hover:underline">Discord</a>
-            <a href="#" className="text-white font-semibold hover:underline">Gizlilik Sözleşmesi</a>
-            <a href="#" className="text-white font-semibold hover:underline">Çerez Politikası</a>
+        {/* Footer ve A-Z Listesi */}
+        <footer className="mt-12 bg-kuzey-blue py-6">
+          <div className="max-w-6xl mx-auto flex flex-col items-center gap-4">
+            {/* Linkler */}
+            <div className="flex gap-4 flex-wrap justify-center">
+              <a href="#" className="text-white font-semibold hover:underline">Discord</a>
+              <a href="#" className="text-white font-semibold hover:underline">Gizlilik Sözleşmesi</a>
+              <a href="#" className="text-white font-semibold hover:underline">Çerez Politikası</a>
+            </div>
+            {/* A-Z Listesi */}
+            <div className="flex flex-wrap gap-1 justify-center mt-2">
+              {alphabet.map((l, i) => (
+                <button key={i} className="bg-[#23263a] text-white px-3 py-1 rounded font-bold hover:bg-kuzey-dark transition text-xs">{l}</button>
+              ))}
+            </div>
+            {/* Copyright ve yasal uyarı */}
+            <div className="text-xs text-center text-white/80 mt-2">
+              Telif haklarının ihlal edildiğini düşünüyorsanız bizimle <a href="mailto:ohuseyineray@gmail.com" className="underline">ohuseyineray@gmail.com</a> üzerinden iletişime geçebilirsiniz.
+            </div>
           </div>
-          <div className="flex flex-wrap gap-1 justify-center mt-2">
-            {alphabet.map((l, i) => (
-              <button key={i} className="bg-[#23263a] text-white px-3 py-1 rounded font-bold hover:bg-kuzey-dark transition text-xs">{l}</button>
-            ))}
-          </div>
-          <div className="text-xs text-center text-white/80 mt-2">
-            Bu mangaların hepsi siteye ikinci bir dilden çevriliyor. Herhangi bir karakter adı farklılığı veya teknik farklılığı olabilir.<br/>
-            Yasal Uyarı: Bu sitede yayımlananlar noveler tanıtım amaçlıdır. Eğer bulunduğunuz bölgede novellerin satışı mevcutsa lütfen satın alın. Telif haklarının ihlal edildiğini düşünüyorsanız bizimle <a href="mailto:ohuseyineray@gmail.com" className="underline">ohuseyineray@gmail.com</a> üzerinden iletişime geçebilirsiniz.
-          </div>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </LayoutWithNavbar>
   );
 }
