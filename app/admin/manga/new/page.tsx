@@ -464,10 +464,9 @@ export default function NewManga() {
               />
               <div className="mt-2">
                 <img
-                  src={bannerPreview || formData.bannerImage || '/default-banner.png'}
+                  src={bannerPreview || formData.bannerImage || ''}
                   alt="Banner Önizleme"
                   className="h-32 w-24 object-cover rounded border border-gray-600"
-                  onError={e => (e.currentTarget.src = '/default-banner.png')}
                 />
               </div>
             </div>
