@@ -14,7 +14,7 @@ interface Manga {
   status: string;
   genres: string[];
   description: string;
-  coverImage: string;
+  coverImage: string | null;
   slug: string;
   chapters: {
     number: number;
@@ -241,7 +241,7 @@ export default function MangaDetailClient({ manga }: MangaDetailClientProps) {
     <div className="max-w-5xl mx-auto py-10 px-4">
       <div className="flex flex-col md:flex-row gap-8 items-start">
         <div className="flex-shrink-0">
-          <img src={manga.coverImage} alt={manga.title} className="w-56 h-80 object-cover rounded-2xl shadow-lg border-4 border-kuzey-blue/30 hover:scale-105 transition" />
+          <img src={manga.coverImage || '/default-cover.png'} alt={manga.title} className="w-56 h-80 object-cover rounded-2xl shadow-lg border-4 border-kuzey-blue/30 hover:scale-105 transition" />
         </div>
         <div className="flex-1 flex flex-col gap-4">
           <h1 className="text-4xl font-extrabold text-kuzey-blue drop-shadow mb-2">{manga.title}</h1>
