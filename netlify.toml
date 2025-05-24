@@ -8,6 +8,7 @@
   NODE_VERSION = "18.19.0"
   PRISMA_SKIP_POSTINSTALL_GENERATE = "false"
   NEXT_PHASE = "production"
+  NODE_ENV = "production"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -38,4 +39,8 @@
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200 
+  status = 200
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@prisma/client"] 

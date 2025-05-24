@@ -1,12 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   reactStrictMode: true,
   swcMinify: true,
   images: {
     domains: ['localhost'],
+    unoptimized: true,
   },
   experimental: {
     optimizePackageImports: ['@prisma/client', 'next-auth', 'framer-motion'],
+    serverActions: true,
   },
   webpack: (config, { dev, isServer }) => {
     // Production optimizations
