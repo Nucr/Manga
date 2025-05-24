@@ -3,41 +3,43 @@ import Link from "next/link";
 
 export const dynamic = 'force-dynamic';
 
-const MangaGenre = {
-  ACTION: "ACTION",
-  ADVENTURE: "ADVENTURE",
-  COMEDY: "COMEDY",
-  DRAMA: "DRAMA",
-  FANTASY: "FANTASY",
-  HORROR: "HORROR",
-  MYSTERY: "MYSTERY",
-  ROMANCE: "ROMANCE",
-  SCIFI: "SCIFI",
-  SLICE_OF_LIFE: "SLICE_OF_LIFE",
-  SUPERNATURAL: "SUPERNATURAL",
-  THRILLER: "THRILLER",
-  SPORTS: "SPORTS",
-  ECCHI: "ECCHI",
-  HAREM: "HAREM",
-  ISEKAI: "İsekai",
-  MECHA: "MECHA",
-  PSYCHOLOGICAL: "PSYCHOLOGICAL",
-  SHOUNEN: "SHOUNEN",
-  SHOUJO: "SHOUJO",
-  SEINEN: "SEINEN",
-  JOSEI: "Josei",
-  YAOI: "Yaoi",
-  YURI: "Yuri",
-  HISTORICAL: "Tarihi",
-  MAGICAL: "Büyü",
-  MARTIAL_ARTS: "Dövüş Sanatları",
-  MUSIC: "Müzik",
-  SCHOOL: "Okul",
-  VAMPIRE: "Vampir",
-  ZOMBIE: "Zombi",
-} as const;
+const PRISMA_MANGA_GENRES = [
+  "ACTION",
+  "ADVENTURE",
+  "COMEDY",
+  "DRAMA",
+  "FANTASY",
+  "HORROR",
+  "MYSTERY",
+  "ROMANCE",
+  "SCIFI",
+  "SLICE_OF_LIFE",
+  "SUPERNATURAL",
+  "THRILLER",
+  "SPORTS",
+  "ECCHI",
+  "HAREM",
+  "ISEKAI",
+  "MECHA",
+  "PSYCHOLOGICAL",
+  "SHOUNEN",
+  "SHOUJO",
+  "SEINEN",
+  "JOSEI",
+  "YAOI",
+  "YURI",
+  "GENDER_BENDER",
+  "HISTORICAL",
+  "MAGICAL",
+  "MARTIAL_ARTS",
+  "MUSIC",
+  "SCHOOL",
+  "VAMPIRE",
+  "ZOMBIE",
+  "FINAL",
+] as const;
 
-const genreTrMap: Record<string, string> = {
+const genreTrMap: Record<typeof PRISMA_MANGA_GENRES[number], string> = {
   ACTION: "Aksiyon",
   ADVENTURE: "Macera",
   COMEDY: "Komedi",
@@ -62,6 +64,7 @@ const genreTrMap: Record<string, string> = {
   JOSEI: "Josei",
   YAOI: "Yaoi",
   YURI: "Yuri",
+  GENDER_BENDER: "Cinsiyet Değişimi",
   HISTORICAL: "Tarihi",
   MAGICAL: "Büyü",
   MARTIAL_ARTS: "Dövüş Sanatları",
@@ -69,10 +72,11 @@ const genreTrMap: Record<string, string> = {
   SCHOOL: "Okul",
   VAMPIRE: "Vampir",
   ZOMBIE: "Zombi",
+  FINAL: "Final",
 };
 
 export default async function GenresPage() {
-  const genres = Object.keys(MangaGenre);
+  const genres = PRISMA_MANGA_GENRES;
 
   // Build sırasında veritabanı sorgularını devre dışı bırak
   if (process.env.NEXT_PHASE === 'production') {
