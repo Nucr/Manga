@@ -252,21 +252,6 @@ export default function Home({
     <LayoutWithNavbar>
       <div className="min-h-screen bg-[#181a20] text-white">
         <Navbar allManga={allManga} />
-        {/* Banner/Slider */}
-        <div className="w-full h-[200px] sm:h-[260px] relative overflow-hidden bg-gradient-to-r from-red-500 to-orange-500">
-          <Image
-            src="/banner-anime.jpg"
-            alt="Banner"
-            layout="fill"
-            objectFit="cover"
-            quality={80}
-            priority
-            className="opacity-50"
-          />
-          <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4 sm:px-10">
-            {/* Banner başlığı ve açıklaması buradaydı, kaldırıldı veya öne çıkan manga bilgileri ile değiştirildi */}
-          </div>
-        </div>
 
         {/* Kategoriler */}
         {/* Kategoriler barı kaldırıldı */}

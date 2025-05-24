@@ -2,6 +2,7 @@
 import { useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function ProfilePage() {
   const { data: session, update } = useSession();
@@ -27,14 +28,18 @@ export default function ProfilePage() {
         body: formData,
       });
       const data = await res.json();
+      console.log('API response data:', data);
       if (data.url) {
+        console.log('New profile image URL:', data.url);
         setProfileImage(data.url);
         setMessage("Profil fotoğrafı güncellendi.");
         update();
       } else {
+        console.log('API response did not contain a URL:', data);
         setMessage("Yükleme başarısız oldu.");
       }
     } catch {
+      console.error('Image upload error');
       setMessage("Bir hata oluştu.");
     } finally {
       setLoading(false);
@@ -127,13 +132,18 @@ export default function ProfilePage() {
           />
         </div>
         {message && <div className="text-center text-sm text-purple-400">{message}</div>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg font-semibold shadow-lg hover:from-purple-600 hover:to-purple-500 transition-all duration-300 disabled:opacity-50"
-        >
-          {loading ? "Kaydediliyor..." : "Kaydet"}
-        </button>
+        <div className="flex gap-4">
+           <Link href="/" className="w-full py-3 px-4 bg-gray-600 text-white rounded-lg font-semibold text-center shadow-lg hover:bg-gray-700 transition-all duration-300">
+              Ana Sayfa
+           </Link>
+           <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg font-semibold shadow-lg hover:from-purple-600 hover:to-purple-500 transition-all duration-300 disabled:opacity-50"
+            >
+              {loading ? "Kaydediliyor..." : "Kaydet"}
+            </button>
+        </div>
       </form>
     </div>
   );

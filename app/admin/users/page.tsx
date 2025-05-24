@@ -1,51 +1,33 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaBook, FaUsers, FaChartLine, FaCog } from 'react-icons/fa';
+import { User } from '@prisma/client';
 
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-  createdAt: string;
-  lastLogin: string;
-}
-
-export default function UserManagement() {
+export default function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Örnek veri
-    setUsers([
-      {
-        id: '1',
-        username: 'admin',
-        email: 'admin@example.com',
-        role: 'Admin',
-        createdAt: '2024-01-01',
-        lastLogin: '2024-03-15'
-      },
-      {
-        id: '2',
-        username: 'moderator',
-        email: 'mod@example.com',
-        role: 'Moderator',
-        createdAt: '2024-01-15',
-        lastLogin: '2024-03-14'
-      },
-      {
-        id: '3',
-        username: 'user1',
-        email: 'user1@example.com',
-        role: 'User',
-        createdAt: '2024-02-01',
-        lastLogin: '2024-03-13'
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/users'); // Kullanıcıları çekeceğimiz API route
+        if (!response.ok) {
+          throw new Error('Kullanıcılar alınamadı');
+        }
+        const data = await response.json();
+        setUsers(data);
+      } catch (err: any) {
+        setError(err.message);
+        setUsers([]);
+      } finally {
+        setLoading(false);
       }
-    ]);
-    setLoading(false);
+    };
+
+    fetchUsers();
   }, []);
 
   const handleDelete = async (id: string) => {
@@ -115,7 +97,6 @@ export default function UserManagement() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">E-posta</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Rol</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Kayıt Tarihi</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Son Giriş</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">İşlemler</th>
                 </tr>
               </thead>
@@ -135,15 +116,15 @@ export default function UserManagement() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">{user.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        user.role === 'Admin' ? 'bg-red-100 text-red-800' :
-                        user.role === 'Moderator' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-green-100 text-green-800'
+                        user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                        user.role === 'MODERATOR' ? 'bg-yellow-100 text-yellow-800' :
+                        user.role === 'USER' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
                       }`}>
                         {user.role}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">{user.createdAt}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">{user.lastLogin}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">{new Date(user.createdAt).toLocaleDateString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex space-x-3">
                         <Link href={`/admin/users/edit/${user.id}`} className="text-blue-400 hover:text-blue-300">

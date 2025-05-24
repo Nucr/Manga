@@ -3,12 +3,12 @@ import prisma from '@/lib/prisma';
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string; chapterId: string } }
+  { params }: { params: { mangaId: string; chapterId: string } }
 ) {
   try {
     // Check if manga exists
     const manga = await prisma.manga.findUnique({
-      where: { id: params.id },
+      where: { id: params.mangaId },
     });
 
     if (!manga) {

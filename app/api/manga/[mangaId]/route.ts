@@ -6,12 +6,12 @@ import { Status, MangaGenre } from '@prisma/client';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { mangaId: string } }
 ) {
   try {
-    const { id } = params;
+    const { mangaId } = params;
     const manga = await prisma.manga.findUnique({
-      where: { id },
+      where: { id: mangaId },
       include: {
         chapters: {
           orderBy: { number: 'desc' },
@@ -44,10 +44,10 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { mangaId: string } }
 ) {
   try {
-    const { id } = params;
+    const { mangaId } = params;
     const formData = await request.formData();
     const title = formData.get('title') as string;
     const slug = formData.get('slug') as string;
@@ -68,7 +68,7 @@ export async function PUT(
 
     // Check if manga exists
     const existingManga = await prisma.manga.findUnique({
-      where: { id },
+      where: { id: mangaId },
     });
 
     if (!existingManga) {
@@ -91,7 +91,7 @@ export async function PUT(
 
     // Update manga
     const updatedManga = await prisma.manga.update({
-      where: { id },
+      where: { id: mangaId },
       data: {
         title,
         slug,

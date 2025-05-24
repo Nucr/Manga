@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { MangaGenre, Status, MangaType } from "@prisma/client";
 import { Suspense } from "react";
+import LayoutWithNavbar from '@/components/LayoutWithNavbar';
 
 const genreTrMap: Record<string, string> = {
   ACTION: "Aksiyon",
@@ -146,49 +147,70 @@ export default async function MangaListPage({ searchParams }: { searchParams?: a
   const genres = Object.values(MangaGenre);
   const statuses = Object.values(Status);
   const types = Object.values(MangaType);
+  
+  const selectedGenre = searchParams?.genre || '';
 
   return (
-    <div className="max-w-7xl mx-auto px-2 md:px-4 py-8">
-      <h1 className="text-3xl font-extrabold mb-8 text-center tracking-tight">Manga Listesi</h1>
-      
-      {/* Filtre Barı */}
-      <form className="mb-8 flex flex-wrap gap-3 items-center justify-center bg-[#23263a] p-4 rounded-2xl shadow-lg" method="get">
-        <select name="genre" defaultValue={searchParams?.genre} className="rounded-lg px-3 py-2 bg-kuzey-dark text-white focus:ring-2 focus:ring-kuzey-blue/60 transition">
-          <option value="">Tür All</option>
-          {genres.map((g) => (
-            <option key={g} value={g}>{genreTrMap[g]}</option>
-          ))}
-        </select>
-        <select name="status" defaultValue={searchParams?.status} className="rounded-lg px-3 py-2 bg-kuzey-dark text-white focus:ring-2 focus:ring-kuzey-blue/60 transition">
-          <option value="">Durum Hepsi</option>
-          {statuses.map((s) => (
-            <option key={s} value={s}>{statusTrMap[s]}</option>
-          ))}
-        </select>
-        <select name="type" defaultValue={searchParams?.type} className="rounded-lg px-3 py-2 bg-kuzey-dark text-white focus:ring-2 focus:ring-kuzey-blue/60 transition">
-          <option value="">Tür Hepsi</option>
-          {types.map((t) => (
-            <option key={t} value={t}>{typeTrMap[t]}</option>
-          ))}
-        </select>
-        <input
-          type="text"
-          name="search"
-          defaultValue={searchParams?.search}
-          placeholder="Arama..."
-          className="rounded-lg px-3 py-2 bg-kuzey-dark text-white focus:ring-2 focus:ring-kuzey-blue/60 transition w-40 md:w-56"
-        />
-        <button type="submit" className="px-5 py-2 bg-kuzey-blue text-white rounded-lg font-bold shadow hover:bg-blue-700 transition">Ara</button>
-      </form>
+    <LayoutWithNavbar>
+      <div className="max-w-7xl mx-auto px-2 md:px-4 py-8">
+        <h1 className="text-3xl font-extrabold mb-8 text-center tracking-tight">Manga Listesi</h1>
+        
+        <div className="mb-8 bg-[#23263a] p-4 rounded-2xl shadow-lg">
+          <h2 className="text-xl font-bold text-white mb-4">Türler</h2>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/manga"
+              className={`px-4 py-2 rounded-lg font-semibold transition ${
+                !selectedGenre ? 'bg-kuzey-blue text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Hepsi
+            </Link>
+            {genres.map((g) => (
+              <Link
+                key={g}
+                href={`/manga?genre=${g}`}
+                className={`px-4 py-2 rounded-lg font-semibold transition ${
+                  selectedGenre === g ? 'bg-kuzey-blue text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                {genreTrMap[g]}
+              </Link>
+            ))}
+          </div>
+        </div>
 
-      {/* Manga Grid */}
-      <Suspense fallback={<LoadingMangaGrid />}>
-        <MangaGrid mangas={mangas} />
-      </Suspense>
+        <form className="mb-8 flex flex-wrap gap-3 items-center justify-center bg-[#23263a] p-4 rounded-2xl shadow-lg" method="get">
+          <select name="status" defaultValue={searchParams?.status} className="rounded-lg px-3 py-2 bg-kuzey-dark text-white focus:ring-2 focus:ring-kuzey-blue/60 transition">
+            <option value="">Durum Hepsi</option>
+            {statuses.map((s) => (
+              <option key={s} value={s}>{statusTrMap[s]}</option>
+            ))}
+          </select>
+          <select name="type" defaultValue={searchParams?.type} className="rounded-lg px-3 py-2 bg-kuzey-dark text-white focus:ring-2 focus:ring-kuzey-blue/60 transition">
+            <option value="">Tür Hepsi</option>
+            {types.map((t) => (
+              <option key={t} value={t}>{typeTrMap[t]}</option>
+            ))}
+          </select>
+          <input
+            type="text"
+            name="search"
+            defaultValue={searchParams?.search}
+            placeholder="Arama..."
+            className="rounded-lg px-3 py-2 bg-kuzey-dark text-white focus:ring-2 focus:ring-kuzey-blue/60 transition w-40 md:w-56"
+          />
+          <button type="submit" className="px-5 py-2 bg-kuzey-blue text-white rounded-lg font-bold shadow hover:bg-blue-700 transition">Ara</button>
+        </form>
 
-      {mangas.length === 0 && (
-        <div className="text-center py-8 text-gray-500">Hiç seri bulunamadı.</div>
-      )}
-    </div>
+        <Suspense fallback={<LoadingMangaGrid />}>
+          <MangaGrid mangas={mangas} />
+        </Suspense>
+
+        {mangas.length === 0 && (
+          <div className="text-center py-8 text-gray-500">Hiç seri bulunamadı.</div>
+        )}
+      </div>
+    </LayoutWithNavbar>
   );
 } 

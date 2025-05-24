@@ -53,19 +53,19 @@ export default function Navbar({ allManga = [] }: { allManga?: any[] }) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="text-2xl font-bold text-blue-400">
-            Kuzey
+            <img src="/site-logo.png" alt="Site Logo" className="h-16 w-auto" />
           </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-4">
+            <Link href="/" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+              Ana Sayfa
+            </Link>
             <Link href="/manga" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-              Manga Listesi
+              Seriler
             </Link>
-            <Link href="/manga?type=MANHWA" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-              Manhwa
-            </Link>
-            <Link href="/manga?type=MANGA" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
-              Manga
+            <Link href="/manga" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+              Türler
             </Link>
           </div>
 
@@ -78,6 +78,51 @@ export default function Navbar({ allManga = [] }: { allManga?: any[] }) {
             >
               <FaSearch className="w-5 h-5" />
             </button>
+
+            {/* User Menu */}
+            {session ? (
+              <div className="relative">
+                <button onClick={() => setMenuOpen(!menuOpen)} className="text-gray-300 hover:text-white p-2">
+                  {session.user?.image ? (
+                    <img src={session.user.image} alt="User Avatar" className="w-6 h-6 rounded-full" />
+                  ) : (
+                    <img src="/default_human.svg" alt="Default Avatar" className="w-6 h-6 rounded-full" />
+                  )}
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-[#23263a] rounded-md shadow-lg py-1 z-50">
+                    <Link href="/profile" onClick={() => setMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#18a20] hover:text-white">
+                      Profilim
+                    </Link>
+                     <Link href="/following" onClick={() => setMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#18a20] hover:text-white">
+                      Takip Ettiklerim
+                    </Link>
+                     <Link href="/lists" onClick={() => setMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#18a20] hover:text-white">
+                      Listelerim
+                    </Link>
+                    <button onClick={() => { signOut(); setMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-[#18a20] hover:text-white">
+                      Çıkış Yap
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="relative hidden md:block">
+                 <button onClick={() => setMenuOpen(!menuOpen)} className="text-gray-300 hover:text-white p-2">
+                    <img src="/default_human.svg" alt="Default Avatar" className="w-6 h-6 rounded-full" />
+                 </button>
+                 {menuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-[#23263a] rounded-md shadow-lg py-1 z-50">
+                       <Link href="/auth/signin" onClick={() => setMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#18a20] hover:text-white">
+                          Giriş Yap
+                       </Link>
+                       <Link href="/auth/register" onClick={() => setMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#18a20] hover:text-white">
+                          Kayıt Ol
+                       </Link>
+                    </div>
+                 )}
+              </div>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -167,14 +212,14 @@ export default function Navbar({ allManga = [] }: { allManga?: any[] }) {
             href="/auth/signin"
             className="flex items-center text-gray-300 hover:text-white px-3 py-2 rounded-md text-base font-medium"
           >
-            <FaUser className="w-5 h-5 mr-2" />
+            <img src="/default_human.svg" alt="Default Avatar" className="w-5 h-5 mr-2 rounded-full" />
             Giriş Yap
           </Link>
           <Link
             href="/auth/register"
             className="flex items-center text-gray-300 hover:text-white px-3 py-2 rounded-md text-base font-medium"
           >
-            <FaUser className="w-5 h-5 mr-2" />
+            <img src="/default_human.svg" alt="Default Avatar" className="w-5 h-5 mr-2 rounded-full" />
             Kayıt Ol
           </Link>
         </div>

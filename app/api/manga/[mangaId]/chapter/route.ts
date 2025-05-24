@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { mangaId: string } }
 ) {
   try {
     const data = await request.json();
@@ -14,7 +14,7 @@ export async function POST(
         number: ch.number,
         title: ch.title,
         content: ch.content,
-        mangaId: String(params.id),
+        mangaId: String(params.mangaId),
         pages: ch.pages && Array.isArray(ch.pages)
           ? { create: ch.pages.map((p: any) => ({ number: p.number, imageUrl: p.imageUrl })) }
           : undefined,
@@ -43,7 +43,7 @@ export async function POST(
         number,
         title,
         content,
-        manga: { connect: { id: String(params.id) } },
+        manga: { connect: { id: String(params.mangaId) } },
         pages: pages && Array.isArray(pages)
           ? { create: pages.map((p: any) => ({ number: p.number, imageUrl: p.imageUrl })) }
           : undefined,

@@ -4,23 +4,35 @@ import prisma from '@/lib/prisma';
 
 export async function POST(req: Request) {
   try {
-    const { username, password, email, name } = await req.json();
+    const { username, password, email } = await req.json();
 
-    if (!username || !password) {
+    if (!username || !password || !email) {
       return NextResponse.json(
-        { error: 'Kullanıcı adı ve şifre gereklidir' },
+        { error: 'Kullanıcı adı, e-posta ve şifre gereklidir' },
         { status: 400 }
       );
     }
 
     // Kullanıcı adının benzersiz olduğunu kontrol et
-    const existingUser = await prisma.user.findUnique({
+    const existingUsername = await prisma.user.findUnique({
       where: { username }
     });
 
-    if (existingUser) {
+    if (existingUsername) {
       return NextResponse.json(
         { error: 'Bu kullanıcı adı zaten kullanılıyor' },
+        { status: 400 }
+      );
+    }
+
+    // E-postanın benzersiz olduğunu kontrol et
+    const existingEmail = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (existingEmail) {
+      return NextResponse.json(
+        { error: 'Bu e-posta zaten kayıtlı' },
         { status: 400 }
       );
     }
@@ -34,7 +46,7 @@ export async function POST(req: Request) {
         username,
         password: hashedPassword,
         email,
-        name,
+        role: 'USER',
       },
     });
 

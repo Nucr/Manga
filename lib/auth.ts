@@ -19,11 +19,21 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Kullanıcı adı ve şifre gereklidir');
         }
 
-        const user = await prisma.user.findUnique({
+        // Kullanıcıyı hem kullanıcı adı hem de e-postaya göre ara
+        let user = await prisma.user.findUnique({
           where: {
             username: credentials.username
           }
         });
+
+        // Kullanıcı adı ile bulunamazsa e-posta ile dene
+        if (!user && credentials.username?.includes('@')) { // @ işareti e-posta olduğunu düşündürür
+             user = await prisma.user.findUnique({
+                where: {
+                    email: credentials.username // credentials.username aslında e-posta olabilir
+                }
+             });
+        }
 
         if (!user) {
           throw new Error('Kullanıcı bulunamadı');

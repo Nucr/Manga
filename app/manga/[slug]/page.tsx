@@ -1,8 +1,7 @@
 import { notFound } from 'next/navigation';
 import MangaDetailClient from '@/components/MangaDetailClient';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import LayoutWithNavbar from '@/components/LayoutWithNavbar';
+import prisma from '@/lib/prisma';
 
 export default async function MangaDetailPage({ params }: { params?: { slug?: string } }) {
   if (!params || !params.slug) return notFound();
@@ -20,8 +19,10 @@ export default async function MangaDetailPage({ params }: { params?: { slug?: st
   if (!manga) return notFound();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <MangaDetailClient manga={manga} />
-    </div>
+    <LayoutWithNavbar>
+      <div className="container mx-auto px-4 py-8">
+        <MangaDetailClient manga={manga} />
+      </div>
+    </LayoutWithNavbar>
   );
 } 

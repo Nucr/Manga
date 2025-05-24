@@ -23,10 +23,13 @@ model Manga {
   genres      MangaGenre[]
   chapters    Chapter[]
   categories  MangaCategory[]
+  follows     Follow[]
+  ratings     Rating[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   summary     String?
   views       Int         @default(0)
+  rating      Float?
 
   @@map("manga")
 }
@@ -82,6 +85,38 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   profileImage  String?
+  follows      Follow[]
+  ratings      Rating[]
+}
+
+model Follow {
+  id        String   @id @default(cuid())
+  userId    String
+  mangaId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isFavorite Boolean  @default(false)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  manga Manga @relation(fields: [mangaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mangaId])
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  userId    String
+  mangaId   String
+  rating    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  manga Manga @relation(fields: [mangaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mangaId])
+  @@index([userId])
+  @@index([mangaId])
 }
 
 enum Role {
