@@ -6,7 +6,7 @@
 [build.environment]
   NEXT_TELEMETRY_DISABLED = "1"
   NODE_VERSION = "18.19.0"
-  PRISMA_SKIP_POSTINSTALL_GENERATE = "true"
+  PRISMA_SKIP_POSTINSTALL_GENERATE = "false"
   NEXT_PHASE = "production"
 
 [[plugins]]
@@ -27,4 +27,15 @@
   pretty_urls = true
 
 [build.processing.images]
-  compress = true 
+  compress = true
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200 

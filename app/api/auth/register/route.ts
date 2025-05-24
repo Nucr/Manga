@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
+import bcryptjs from 'bcryptjs';
 import prisma from '@/lib/prisma';
 
 export async function POST(req: Request) {
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     }
 
     // Şifreyi hashle
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcryptjs.hash(password, 10);
 
     // Kullanıcıyı oluştur
     const user = await prisma.user.create({

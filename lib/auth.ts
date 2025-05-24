@@ -2,7 +2,7 @@ import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import prisma from './prisma';
-import bcrypt from 'bcryptjs';
+import bcryptjs from 'bcryptjs';
 import { User } from '@prisma/client';
 
 export const authOptions: NextAuthOptions = {
@@ -27,19 +27,19 @@ export const authOptions: NextAuthOptions = {
         });
 
         // Kullanıcı adı ile bulunamazsa e-posta ile dene
-        if (!user && credentials.username?.includes('@')) { // @ işareti e-posta olduğunu düşündürür
-             user = await prisma.user.findUnique({
-                where: {
-                    email: credentials.username // credentials.username aslında e-posta olabilir
-                }
-             });
+        if (!user && credentials.username?.includes('@')) {
+          user = await prisma.user.findUnique({
+            where: {
+              email: credentials.username
+            }
+          });
         }
 
         if (!user) {
           throw new Error('Kullanıcı bulunamadı');
         }
 
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+        const isPasswordValid = await bcryptjs.compare(credentials.password, user.password || '');
 
         if (!isPasswordValid) {
           throw new Error('Geçersiz şifre');
@@ -67,19 +67,19 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as User).role;
+        token.role = user.role;
         token.id = user.id;
-        token.username = (user as any).username;
-        token.profileImage = (user as any).profileImage;
+        token.username = user.username;
+        token.profileImage = user.profileImage;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
-        (session.user as any).username = token.username;
-        (session.user as any).profileImage = token.profileImage;
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.username = token.username as string;
+        session.user.profileImage = token.profileImage as string;
       }
       return session;
     },
