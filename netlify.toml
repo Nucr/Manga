@@ -1,5 +1,5 @@
 [build]
-  command = "npm install && npx prisma generate && npm run build"
+  command = "npm install && npm run build"
   publish = ".next"
   ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF ./"
 
@@ -9,6 +9,7 @@
   PRISMA_SKIP_POSTINSTALL_GENERATE = "false"
   NEXT_PHASE = "production"
   NODE_ENV = "production"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
