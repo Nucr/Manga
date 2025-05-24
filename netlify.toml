@@ -10,6 +10,7 @@
   NEXT_PHASE = "production"
   NODE_ENV = "production"
   NPM_FLAGS = "--legacy-peer-deps"
+  PATH = "/opt/buildhome/.nvm/versions/node/v18.19.0/bin:/opt/buildhome/.cargo/bin:/opt/buildhome/.local/bin:/opt/buildhome/bin:/opt/buildhome/.local/bin:/opt/buildhome/.nvm/versions/node/v18.19.0/bin:/opt/buildhome/.cargo/bin:/opt/buildhome/.local/bin:/opt/buildhome/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
