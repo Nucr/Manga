@@ -6,7 +6,6 @@ const nextConfig = {
     domains: ['localhost'],
   },
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: ['@prisma/client', 'next-auth', 'framer-motion'],
   },
   webpack: (config, { dev, isServer }) => {
