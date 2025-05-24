@@ -117,7 +117,6 @@ export default function UserManagementPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         user.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
-                        user.role === 'MODERATOR' ? 'bg-yellow-100 text-yellow-800' :
                         user.role === 'USER' ? 'bg-green-100 text-green-800' :
                         'bg-gray-100 text-gray-800'
                       }`}>
