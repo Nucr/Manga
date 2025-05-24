@@ -19,7 +19,7 @@ const MangaGenre = {
   SPORTS: "SPORTS",
   ECCHI: "ECCHI",
   HAREM: "HAREM",
-  ISEKAI: "ISEKAI",
+  ISEKAI: "İsekai",
   MECHA: "MECHA",
   PSYCHOLOGICAL: "PSYCHOLOGICAL",
   SHOUNEN: "SHOUNEN",
@@ -72,7 +72,7 @@ const genreTrMap: Record<string, string> = {
 };
 
 export default async function GenresPage() {
-  const genres = Object.values(MangaGenre);
+  const genres = Object.keys(MangaGenre);
 
   // Build sırasında veritabanı sorgularını devre dışı bırak
   if (process.env.NEXT_PHASE === 'production') {
