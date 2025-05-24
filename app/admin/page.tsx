@@ -23,12 +23,25 @@ export default function AdminDashboard() {
         setLoading(false);
       });
     fetch('/api/activities')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Aktiviteler alınamadı');
+        }
+        return res.json();
+      })
       .then(data => {
-        setActivities(data);
+        if (Array.isArray(data)) {
+          setActivities(data);
+        } else {
+          setActivities([]);
+        }
         setActLoading(false);
       })
-      .catch(() => setActLoading(false));
+      .catch((error) => {
+        console.error('Aktivite yükleme hatası:', error);
+        setActivities([]);
+        setActLoading(false);
+      });
   }, []);
 
   function timeAgo(dateString: string) {
@@ -120,7 +133,7 @@ export default function AdminDashboard() {
             <div className="space-y-3">
               {actLoading ? (
                 <div className="text-gray-400">Yükleniyor...</div>
-              ) : activities.length === 0 ? (
+              ) : !activities || activities.length === 0 ? (
                 <div className="text-gray-400">Aktivite yok.</div>
               ) : (
                 activities.slice(0, 6).map((act, i) => (
