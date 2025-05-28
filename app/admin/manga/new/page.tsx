@@ -32,7 +32,6 @@ interface FormData {
   type: MangaType;
   genres: MangaGenre[];
   coverImage: string | null;
-  bannerImage: string | null;
   summary: string;
   chapters: Chapter[];
 }
@@ -76,7 +75,6 @@ export default function NewManga() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     title: '',
     slug: '',
@@ -87,7 +85,6 @@ export default function NewManga() {
     type: 'MANGA',
     genres: [],
     coverImage: null,
-    bannerImage: null,
     summary: '',
     chapters: []
   });
@@ -170,7 +167,7 @@ export default function NewManga() {
     }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'cover' | 'banner') => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'cover') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -185,9 +182,6 @@ export default function NewManga() {
       if (type === 'cover') {
         setCoverPreview(result);
         setFormData(prev => ({ ...prev, coverImage: result }));
-      } else {
-        setBannerPreview(result);
-        setFormData(prev => ({ ...prev, bannerImage: result }));
       }
     };
     reader.readAsDataURL(file);
@@ -440,33 +434,6 @@ export default function NewManga() {
                   alt="Kapak Önizleme"
                   className="h-32 w-24 object-cover rounded border border-gray-600"
                   onError={e => (e.currentTarget.src = '/default-cover.png')}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Banner Resmi
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, 'banner')}
-                className="mb-2"
-              />
-              <input
-                type="url"
-                name="bannerImage"
-                value={formData.bannerImage || ''}
-                onChange={e => setFormData({ ...formData, bannerImage: e.target.value })}
-                className="w-full px-4 py-2 bg-gray-700/50 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
-                placeholder="Banner Resmi URL"
-              />
-              <div className="mt-2">
-                <img
-                  src={bannerPreview || formData.bannerImage || ''}
-                  alt="Banner Önizleme"
-                  className="h-32 w-24 object-cover rounded border border-gray-600"
                 />
               </div>
             </div>
