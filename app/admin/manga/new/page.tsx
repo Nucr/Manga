@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { FaArrowLeft, FaBook, FaChartLine, FaCog } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import { X } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../../lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
