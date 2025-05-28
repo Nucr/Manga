@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { FaArrowLeft, FaBook, FaChartLine, FaCog } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import { X } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import { v4 as uuidv4 } from 'uuid';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -99,21 +101,31 @@ export default function NewManga() {
   const handleChapterChange = (idx: number, field: string, value: string) => {
     setChapters(chapters.map((ch, i) => i === idx ? { ...ch, [field]: value } : ch));
   };
-  const handlePageFilesChange = (chapterIdx: number, files: FileList | null) => {
+  const handlePageFilesChange = async (chapterIdx: number, files: FileList | null) => {
     if (!files) return;
-    const fileReaders: Promise<{ imageUrl: string }>[] = Array.from(files).map(file => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve({ imageUrl: reader.result as string });
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    });
-    Promise.all(fileReaders).then(images => {
-      setChapters(chapters => chapters.map((ch, i) =>
-        i === chapterIdx ? { ...ch, pages: [...ch.pages, ...images] } : ch
-      ));
-    });
+    setLoading(true);
+    const uploadedImages: { imageUrl: string }[] = [];
+    for (const file of Array.from(files)) {
+      const filePath = `pages/${uuidv4()}-${file.name}`;
+      const { data, error } = await supabase.storage
+        .from('pages')
+        .upload(filePath, file);
+
+      if (error) {
+        console.error('Sayfa resmi yükleme hatası:', error);
+        toast.error(`Sayfa resmi yüklenirken bir hata oluştu: ${file.name}`);
+        setLoading(false);
+        return;
+      }
+
+      const { publicUrl } = supabase.storage.from('pages').getPublicUrl(data.path);
+      uploadedImages.push({ imageUrl: publicUrl });
+    }
+
+    setChapters(chapters => chapters.map((ch, i) =>
+      i === chapterIdx ? { ...ch, pages: [...ch.pages, ...uploadedImages] } : ch
+    ));
+    setLoading(false);
   };
   const handleRemovePage = (chapterIdx: number, pageIdx: number) => {
     setChapters(chapters => chapters.map((ch, i) =>
@@ -131,15 +143,15 @@ export default function NewManga() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          ...formData, 
-          chapters: chapters
+        body: JSON.stringify({
+          ...formData,
+          chapters: chapters && Array.isArray(chapters) ? chapters
             .filter(ch => ch.title && ch.number)
             .map(ch => ({
               ...ch,
               number: parseFloat(ch.number),
-              pages: ch.pages
-            }))
+              pages: ch.pages && Array.isArray(ch.pages) ? ch.pages : []
+            })) : []
         }),
       });
 
@@ -167,7 +179,7 @@ export default function NewManga() {
     }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'cover') => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'cover') => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -176,15 +188,24 @@ export default function NewManga() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      if (type === 'cover') {
-        setCoverPreview(result);
-        setFormData(prev => ({ ...prev, coverImage: result }));
-      }
-    };
-    reader.readAsDataURL(file);
+    setLoading(true);
+    const filePath = `covers/${uuidv4()}-${file.name}`;
+    const { data, error } = await supabase.storage
+      .from('covers')
+      .upload(filePath, file);
+
+    if (error) {
+      console.error('Resim yükleme hatası:', error);
+      toast.error('Resim yüklenirken bir hata oluştu.');
+      setLoading(false);
+      return;
+    }
+
+    const { publicUrl } = supabase.storage.from('covers').getPublicUrl(data.path);
+
+    setCoverPreview(publicUrl);
+    setFormData(prev => ({ ...prev, coverImage: publicUrl }));
+    setLoading(false);
   };
 
   return (
