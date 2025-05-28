@@ -430,10 +430,10 @@ export default function NewManga() {
               />
               <div className="mt-2">
                 <img
-                  src={coverPreview || formData.coverImage || '/default-cover.png'}
+                  src={coverPreview || formData.coverImage || '/profile/default-cover.png'}
                   alt="Kapak Önizleme"
                   className="h-32 w-24 object-cover rounded border border-gray-600"
-                  onError={e => (e.currentTarget.src = '/default-cover.png')}
+                  onError={e => (e.currentTarget.src = '/profile/default-cover.png')}
                 />
               </div>
             </div>
